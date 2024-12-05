@@ -1,1 +1,11 @@
+.log-row-planned {
+  background-color: #e3f2fd;
+}
 
+.log-row-unplanned {
+  background-color: #fff3e0;
+}
+
+.log-row-emergency {
+  background-color: #ffebee;
+}

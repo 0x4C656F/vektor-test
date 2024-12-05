@@ -1,8 +1,10 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { RootState } from ".";
+import { LogType } from "./logs";
 
 const ONE_DAY = 86400000;
 
-type Draft = {
+export type Draft = {
   id: string;
   providerId?: string;
   serviceOrder?: string;
@@ -11,67 +13,81 @@ type Draft = {
   engineHours?: number;
   startDate?: string;
   endDate?: string;
-  type?: DraftType;
+  type?: LogType;
   serviceDescription?: string;
 };
-
-enum DraftType {
-  PLANNED = "planned",
-  UNPLANNED = "unplanned",
-  EMERGENCY = "emergency",
-}
 
 interface DraftsState {
   drafts: Record<string, Draft>;
 }
 
+const LOCAL_STORAGE_KEY = "drafts";
+
+function getDraftsFromLocalStorage(): Record<string, Draft> {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveDraftsToLocalStorage(drafts: Record<string, Draft>): void {
+  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(drafts));
+}
+
 const initialState: DraftsState = {
-  drafts: {},
+  drafts: getDraftsFromLocalStorage(),
 };
-
-function addDraftToLocalStorage(draft: Draft) {
-  const drafts = JSON.parse(localStorage.getItem("drafts") || "[]");
-  drafts.push(draft);
-  localStorage.setItem("drafts", JSON.stringify(drafts));
-}
-
-function updateDraftInLocalStorage(draft: Draft) {
-  const drafts = JSON.parse(localStorage.getItem("drafts") || "[]");
-  const index = drafts.findIndex((d: Draft) => d.id === draft.id);
-  drafts[index] = draft;
-  localStorage.setItem("drafts", JSON.stringify(drafts));
-}
 
 const draftsSlice = createSlice({
   name: "drafts",
   initialState,
   reducers: {
-    addDraft: (state, action: PayloadAction<string>) => {
+    addDraft(state, action: PayloadAction<string>) {
       const id = action.payload;
-      state.drafts[id] = {
+      const newDraft: Draft = {
         id,
         startDate: new Date().toISOString().split("T")[0],
         endDate: new Date(Date.now() + ONE_DAY).toISOString().split("T")[0],
       };
-      addDraftToLocalStorage(state.drafts[id]);
+
+      const drafts = { ...state.drafts };
+      drafts[id] = newDraft;
+
+      state.drafts = drafts;
+
+      saveDraftsToLocalStorage(drafts);
     },
-    updateDraft: (state, action: PayloadAction<Draft>) => {
-      const { id, ...data } = action.payload;
+
+    updateDraft(state, action: PayloadAction<Draft>) {
+      const { id, ...updates } = action.payload;
       if (state.drafts[id]) {
-        state.drafts[id] = { ...state.drafts[id], ...data };
+        state.drafts[id] = { ...state.drafts[id], ...updates };
+        saveDraftsToLocalStorage(state.drafts);
       }
-      updateDraftInLocalStorage(action.payload);
     },
-    deleteDraft: (state, action: PayloadAction<string>) => {
-      delete state.drafts[action.payload];
+
+    deleteDraft(state, action: PayloadAction<string>) {
+      const id = action.payload;
+      if (state.drafts[id]) {
+        delete state.drafts[id];
+        saveDraftsToLocalStorage(state.drafts);
+      }
     },
-    clearDrafts: (state) => {
+
+    clearDrafts(state) {
       state.drafts = {};
+      saveDraftsToLocalStorage(state.drafts);
     },
   },
 });
 
-export const { addDraft, updateDraft, deleteDraft, clearDrafts } =
+export const selectDrafts = createSelector(
+  (state: RootState) => state.drafts.drafts,
+  (drafts) => Object.values(drafts),
+);
+
+export const { addDraft, loadDrafts, updateDraft, deleteDraft, clearDrafts } =
   draftsSlice.actions;
 
 export default draftsSlice.reducer;
