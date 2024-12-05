@@ -95,7 +95,14 @@ const LogsPage: React.FC = () => {
     { field: "startDate", headerName: "Start Date", width: 150 },
     { field: "endDate", headerName: "End Date", width: 150 },
     { field: "engineHours", headerName: "Engine Hours", width: 150 },
-    { field: "odometer", headerName: "Odometer", width: 150 },
+    {
+      field: "odometer",
+      headerName: "Odometer",
+      width: 150,
+      renderCell: (params) => {
+        return <Box>{params.value} mi</Box>;
+      },
+    },
     { field: "totalAmount", headerName: "Total Amount", width: 150 },
     // Если бы у меня было больше времени, я бы сделал это как дропдаун, в котором были бы все операции с логом. + 100% Конфирмация для удаления, ее делать пару минут.
     {
