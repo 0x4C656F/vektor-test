@@ -100,7 +100,8 @@ const DraftPage: React.FC = () => {
   if (!draft || !id) {
     return <DraftNotFound />;
   }
-
+  // imho, tailwindcss + any ui lib would be more readable then MUI.
+  // This shi feels like react native
   return (
     <>
       <Container
@@ -258,7 +259,7 @@ const DraftPage: React.FC = () => {
             fullWidth
           />
           <Box sx={{ display: "flex", gap: 2, justifyContent: "end" }}>
-            <RemoveDraftButton id={id} />
+            <RemoveDraftButton handler={() => dispatch(deleteDraft(id))} />
             <Button
               type="submit"
               variant="contained"
@@ -304,11 +305,10 @@ function DraftNotFound() {
   );
 }
 
-function RemoveDraftButton({ id }: { id: string }) {
+function RemoveDraftButton({ handler }: { handler: () => void }) {
   // normally, i would request confirmation from user.
-  const dispatch = useDispatch();
   function handleRemove() {
-    dispatch(deleteDraft(id));
+    handler();
   }
 
   return (

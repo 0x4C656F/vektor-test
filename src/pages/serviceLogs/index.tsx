@@ -17,8 +17,8 @@ import Add from "@mui/icons-material/Add";
 import { nanoid } from "nanoid";
 import { addDraft } from "../../store/drafts";
 import { useNavigate } from "react-router-dom";
-import { Remove } from "@mui/icons-material";
 import Delete from "@mui/icons-material/Delete";
+import { Edit } from "@mui/icons-material";
 
 const LogsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -101,11 +101,14 @@ const LogsPage: React.FC = () => {
     {
       field: "actions",
       headerName: "Actions",
-      width: 80,
+      width: 150,
       renderCell: (params) => {
         return (
           <Box>
-            <RemoveLogIconButton id={params.id.toString()} />
+            <RemoveLogIconButton
+              handler={() => dispatch(deleteLog(params.id.toString()))}
+            />
+            <EditLogIconButton />
           </Box>
         );
       },
@@ -186,15 +189,22 @@ const LogsPage: React.FC = () => {
   );
 };
 
-function RemoveLogIconButton({ id }: { id: string }) {
-  const dispatch = useDispatch();
+function RemoveLogIconButton({ handler }: { handler: () => void }) {
+  return (
+    <IconButton onClick={handler}>
+      <Delete />
+    </IconButton>
+  );
+}
+
+function EditLogIconButton({}) {
   return (
     <IconButton
       onClick={() => {
-        dispatch(deleteLog(id));
+        alert("This feature is not yet implemented");
       }}
     >
-      <Delete />
+      <Edit />
     </IconButton>
   );
 }
