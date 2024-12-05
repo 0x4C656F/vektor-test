@@ -45,7 +45,8 @@ const DraftPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams<{ id: string }>();
-  const draft = useSelector((state: RootState) => state.drafts.drafts[id!]);
+  if (!id) return;
+  const draft = useSelector((state: RootState) => state.drafts.drafts[id]);
 
   const [status, setStatus] = useState("Saved");
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -55,25 +56,22 @@ const DraftPage: React.FC = () => {
     handleSubmit,
     watch,
     setValue,
-    reset,
     formState: { errors, isValid },
   } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: draft,
     mode: "onChange",
+    defaultValues: draft,
   });
+
   const startDate = watch("startDate");
-  useEffect(() => {
-    if (draft) {
-      reset(draft);
-    }
-  }, [draft, reset]);
+
   useEffect(() => {
     if (startDate) {
       const nextDay = format(addDays(new Date(startDate), 1), "yyyy-MM-dd");
       setValue("endDate", nextDay);
     }
   }, [startDate, setValue]);
+
   const saveDraft = (updatedValues: Draft) => {
     if (!id) return;
     setStatus("Saving...");
@@ -87,13 +85,13 @@ const DraftPage: React.FC = () => {
     setSaveTimeout(
       setTimeout(() => {
         saveDraft(updatedValues);
-      }, 2000),
+      }, 1000),
     );
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     if (id) {
-      dispatch(createLogFromDraft(values as any));
+      dispatch(createLogFromDraft(values as Draft));
       dispatch(deleteDraft(id));
       navigate("/logs");
     }
@@ -104,13 +102,17 @@ const DraftPage: React.FC = () => {
   }
 
   return (
-    <div className="w-screen h-full mx-auto py-8 px-4 rounded shadow">
+    <div key={id} className="w-screen h-full mx-auto py-8 px-4 rounded shadow">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        onChange={() => handleSave(watch() as any)}
-        className=" draft-form "
+        onChange={() => handleSave(watch() as Draft)}
+        className="draft-form"
       >
-        <SectionTitle icon={<Edit3 size={24} />} title="Provider" />
+        <SectionTitle
+          index={"01"}
+          icon={<Edit3 size={24} />}
+          title="Provider"
+        />
         <div className="flex space-x-4">
           <div className="w-full space-y-2">
             <label className="block text-sm font-medium">Provider ID</label>
@@ -132,7 +134,11 @@ const DraftPage: React.FC = () => {
           </div>
         </div>
 
-        <SectionTitle icon={<Truck size={24} />} title="Transport" />
+        <SectionTitle
+          index={"02"}
+          icon={<Truck size={24} />}
+          title="Transport"
+        />
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="block text-sm font-medium">
@@ -167,7 +173,11 @@ const DraftPage: React.FC = () => {
           </div>
         </div>
 
-        <SectionTitle icon={<Calendar size={24} />} title="Service" />
+        <SectionTitle
+          index={"03"}
+          icon={<Calendar size={24} />}
+          title="Service"
+        />
         <div className="flex space-x-4">
           <div className="w-full space-y-2">
             <label className="block text-sm font-medium">Start Date</label>
@@ -217,26 +227,24 @@ const DraftPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex justify-end space-x-4">
-          <Button
-            variant="destructive"
-            onClick={() => dispatch(deleteDraft(id))}
-          >
+        <div className="flex justify-between items-center ">
+          <Button variant="ghost" onClick={() => dispatch(deleteDraft(id))}>
             <Trash2 size={16} />
           </Button>
-          <Button type="submit" disabled={!isValid}>
-            Create Log
-          </Button>
-        </div>
-
-        {status && (
-          <div className="text-sm text-gray-600 flex items-center">
-            {status === "Saved" && (
-              <CheckCircle className="mr-2 text-green-500" size={16} />
+          <div className="flex gap-4">
+            {status && (
+              <div className=" text-sm text-foreground/40 flex items-center">
+                {status === "Saved" && (
+                  <CheckCircle className="mr-2 text-green-500" size={16} />
+                )}
+                {status}
+              </div>
             )}
-            {status}
+            <Button type="submit" disabled={!isValid}>
+              Create Log
+            </Button>
           </div>
-        )}
+        </div>
       </form>
     </div>
   );
@@ -245,13 +253,18 @@ const DraftPage: React.FC = () => {
 function SectionTitle({
   icon,
   title,
+  index,
 }: {
   icon: React.ReactNode;
   title: string;
+  index: string;
 }) {
   return (
     <h3>
       {icon}
+      <span className="absolute -left-12 -top-full text-7xl text-foreground/5 ">
+        {index}
+      </span>
       <span>{title}</span>
     </h3>
   );

@@ -1,4 +1,9 @@
-import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSelector,
+  createSlice,
+  nanoid,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 import { RootState } from ".";
 import { LogType } from "./logs";
 
@@ -25,9 +30,45 @@ const LOCAL_STORAGE_KEY = "drafts";
 
 function getDraftsFromLocalStorage(): Record<string, Draft> {
   try {
-    return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (data) {
+      return JSON.parse(data);
+    } else {
+      const defaultDrafts: Record<string, Draft> = {
+        "draft-001": {
+          id: "draft-001",
+          providerId: "provider-123",
+          serviceOrder: "SO-5678",
+          truckIdOrTrailer: "Truck-45",
+          odometer: 78000,
+          engineHours: 2100,
+          startDate: "2024-12-01",
+          endDate: "2024-12-03",
+          type: LogType.UNPLANNED,
+          serviceDescription:
+            "Routine safety inspection and maintenance check.",
+        },
+      };
+      saveDraftsToLocalStorage(defaultDrafts);
+      return defaultDrafts;
+    }
   } catch {
-    return {};
+    const fallbackDrafts: Record<string, Draft> = {
+      "draft-001": {
+        id: "draft-001",
+        providerId: "provider-123",
+        serviceOrder: "SO-5678",
+        truckIdOrTrailer: "Truck-45",
+        odometer: 78000,
+        engineHours: 2100,
+        startDate: "2024-12-01",
+        endDate: "2024-12-03",
+        type: LogType.UNPLANNED,
+        serviceDescription: "Routine safety inspection and maintenance check.",
+      },
+    };
+    saveDraftsToLocalStorage(fallbackDrafts);
+    return fallbackDrafts;
   }
 }
 
@@ -43,12 +84,19 @@ const draftsSlice = createSlice({
   name: "drafts",
   initialState,
   reducers: {
-    addDraft(state, action: PayloadAction<string>) {
-      const id = action.payload;
+    addDraft(state, action: PayloadAction<string | undefined>) {
+      let id;
+      if (action.payload) {
+        id = action.payload;
+      } else {
+        id = nanoid();
+      }
       const newDraft: Draft = {
         id,
         startDate: new Date().toISOString().split("T")[0],
         endDate: new Date(Date.now() + ONE_DAY).toISOString().split("T")[0],
+        odometer: 0,
+        engineHours: 0,
       };
 
       const drafts = { ...state.drafts };
@@ -87,7 +135,7 @@ export const selectDrafts = createSelector(
   (drafts) => Object.values(drafts),
 );
 
-export const { addDraft, loadDrafts, updateDraft, deleteDraft, clearDrafts } =
+export const { addDraft, updateDraft, deleteDraft, clearDrafts } =
   draftsSlice.actions;
 
 export default draftsSlice.reducer;

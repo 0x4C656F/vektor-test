@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import { Draft } from "./drafts";
 
@@ -30,12 +30,118 @@ interface LogsState {
 }
 
 const LOCAL_STORAGE_KEY = "logs";
-
 function getLogsFromLocalStorage(): Log[] {
   try {
-    return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
+    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (data) {
+      return JSON.parse(data);
+    } else {
+      const defaultLogs: Log[] = [
+        {
+          id: "1",
+          orderNumber: "ORD-3456",
+          equipment: "Excavator",
+          driver: "John Doe",
+          type: LogType.UNPLANNED,
+          provider: "HeavyEquip Services",
+          startDate: "2024-11-01",
+          endDate: "2024-11-03",
+          engineHours: 1500,
+          odometer: 12500,
+          totalAmount: "4500.00",
+          lastService: "2024-10-15",
+          solvedDefects: "Hydraulic leak repaired",
+          files: ["service-report-1.pdf", "invoice-3456.pdf"],
+        },
+        {
+          id: "2",
+          orderNumber: "ORD-7890",
+          equipment: "Bulldozer",
+          driver: "Jane Smith",
+          type: LogType.PLANNED,
+          provider: "EquipInspect Ltd",
+          startDate: "2024-11-05",
+          endDate: "2024-11-05",
+          engineHours: 2500,
+          odometer: 32000,
+          totalAmount: "1200.00",
+          lastService: "2024-09-20",
+          solvedDefects: "None",
+          files: ["inspection-report-7890.pdf"],
+        },
+        {
+          id: "3",
+          orderNumber: "ORD-5647",
+          equipment: "Dump Truck",
+          driver: "Mike Johnson",
+          type: LogType.EMERGENCY,
+          provider: "TruckFix Solutions",
+          startDate: "2024-10-20",
+          endDate: "2024-10-25",
+          engineHours: 1800,
+          odometer: 54000,
+          totalAmount: "8900.00",
+          lastService: "2024-08-10",
+          solvedDefects: "Brake system overhaul, replaced tires",
+          files: ["repair-summary-5647.pdf", "payment-receipt.pdf"],
+        },
+      ];
+      saveLogsToLocalStorage(defaultLogs);
+      return defaultLogs;
+    }
   } catch {
-    return [];
+    const fallbackLogs: Log[] = [
+      {
+        id: "1",
+        orderNumber: "ORD-3456",
+        equipment: "Excavator",
+        driver: "John Doe",
+        type: LogType.UNPLANNED,
+        provider: "HeavyEquip Services",
+        startDate: "2024-11-01",
+        endDate: "2024-11-03",
+        engineHours: 1500,
+        odometer: 12500,
+        totalAmount: "4500.00",
+        lastService: "2024-10-15",
+        solvedDefects: "Hydraulic leak repaired",
+        files: ["service-report-1.pdf", "invoice-3456.pdf"],
+      },
+      {
+        id: "2",
+        orderNumber: "ORD-7890",
+        equipment: "Bulldozer",
+        driver: "Jane Smith",
+        type: LogType.PLANNED,
+        provider: "EquipInspect Ltd",
+        startDate: "2024-11-05",
+        endDate: "2024-11-05",
+        engineHours: 2500,
+        odometer: 32000,
+        totalAmount: "1200.00",
+        lastService: "2024-09-20",
+        solvedDefects: "None",
+        files: ["inspection-report-7890.pdf"],
+      },
+      {
+        id: "3",
+        orderNumber: "ORD-5647",
+        equipment: "Dump Truck",
+        driver: "Mike Johnson",
+        type: LogType.EMERGENCY,
+        provider: "TruckFix Solutions",
+        startDate: "2024-10-20",
+        endDate: "2024-10-25",
+        engineHours: 1800,
+        odometer: 54000,
+        totalAmount: "8900.00",
+        lastService: "2024-08-10",
+        solvedDefects: "Brake system overhaul, replaced tires",
+        files: ["repair-summary-5647.pdf", "payment-receipt.pdf"],
+      },
+    ];
+    saveLogsToLocalStorage(fallbackLogs);
+    return fallbackLogs;
   }
 }
 
@@ -53,8 +159,9 @@ const logsSlice = createSlice({
   reducers: {
     createLogFromDraft(state, action: PayloadAction<Draft>) {
       const draft = action.payload;
+      const id = nanoid();
       const newLog: Log = {
-        id: draft.id,
+        id,
         orderNumber: draft.serviceOrder || "N/A",
         equipment: draft.truckIdOrTrailer || "Unknown",
         driver: "Unknown",

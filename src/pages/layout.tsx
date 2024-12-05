@@ -6,10 +6,10 @@ import { selectDrafts } from "../store/drafts";
 function Layout() {
   const drafts = useSelector(selectDrafts);
   return (
-    <div>
+    <>
       <DraftHeader drafts={drafts} />
       <Outlet />
-    </div>
+    </>
   );
 }
 export default Layout;
