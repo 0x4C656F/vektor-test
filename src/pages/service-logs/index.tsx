@@ -139,19 +139,21 @@ const LogsPage: React.FC = () => {
                 <TableCell>{log.orderNumber}</TableCell>
                 <TableCell>{log.equipment}</TableCell>
                 <TableCell>{log.driver}</TableCell>
-                <TableCell className="flex items-center gap-2">
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      log.type === "planned"
-                        ? "bg-green-500"
-                        : log.type === "unplanned"
-                          ? "bg-orange-500"
-                          : log.type === "emergency"
-                            ? "bg-red-500"
-                            : "bg-gray-500"
-                    }`}
-                  ></span>
-                  {log.type}
+                <TableCell>
+                  <p className="flex gap-2 items-center">
+                    <span
+                      className={`size-2 flex rounded-full ${
+                        log.type === "planned"
+                          ? "bg-green-500"
+                          : log.type === "unplanned"
+                            ? "bg-orange-500"
+                            : log.type === "emergency"
+                              ? "bg-red-500"
+                              : "bg-gray-500"
+                      }`}
+                    ></span>
+                    {log.type}
+                  </p>
                 </TableCell>
                 <TableCell>{log.provider}</TableCell>
                 <TableCell>{log.startDate}</TableCell>
