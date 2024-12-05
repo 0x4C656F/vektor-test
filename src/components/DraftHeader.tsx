@@ -1,10 +1,10 @@
-import { AppBar, Tabs, Tab } from "@mui/material";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import AddIcon from "@mui/icons-material/Add";
 import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { nanoid } from "nanoid";
-import { addDraft, clearDrafts } from "../store/drafts";
+import { addDraft } from "../store/drafts";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface DraftHeaderProps {
   drafts: { id: string }[];
@@ -21,38 +21,29 @@ const DraftHeader: React.FC<DraftHeaderProps> = ({ drafts }) => {
     navigate(`/drafts/${id}`);
   };
 
-  const currentTabValue = drafts.some(
-    (draft) => location.pathname === `/drafts/${draft.id}`,
-  )
-    ? location.pathname
-    : false;
-
   return (
-    <AppBar position="static" color="default">
-      <Tabs
-        value={currentTabValue}
-        variant="scrollable"
-        scrollButtons="auto"
-        aria-label="draft tabs"
-      >
-        {drafts.map((draft, i) => (
-          <Tab
+    <div className="relative gap-2 flex items-center h-10  px-4  bg-slate-900">
+      {drafts.map((draft, index) => {
+        const isActive = location.pathname === `/drafts/${draft.id}`;
+        return (
+          <Link
             key={draft.id}
-            label={`Draft ${i + 1}`}
-            value={`/drafts/${draft.id}`}
-            component={Link}
             to={`/drafts/${draft.id}`}
-          />
-        ))}
-        <Tab
-          icon={<AddIcon />}
-          aria-label="Create New Draft"
-          onClick={handleCreateDraft}
-        />
-        <Tab label="Remove all" onClick={() => dispatch(clearDrafts())} />
-        <Tab label="To logs" component={Link} to={"/logs"} />
-      </Tabs>
-    </AppBar>
+            className={`relative px-4 py-2 transition-all  rounded-t-lg  border-border flex items-center justify-center ${
+              isActive ? `bg-background z-10 border-b-0 ` : "bg-slate-900 z-0"
+            }`}
+            style={{
+              zIndex: drafts.length - index,
+            }}
+          >
+            Draft {index + 1}
+          </Link>
+        );
+      })}
+      <Button onClick={handleCreateDraft} variant="ghost" size="icon">
+        <Plus />
+      </Button>
+    </div>
   );
 };
 

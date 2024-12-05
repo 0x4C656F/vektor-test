@@ -1,11 +1,12 @@
-.log-row-planned {
-  background-color: #e3f2fd;
-}
-
-.log-row-unplanned {
-  background-color: #fff3e0;
-}
-
-.log-row-emergency {
-  background-color: #ffebee;
+.draft-form {
+  @apply flex flex-col gap-4 max-w-lg;
+  input {
+    @apply text-foreground/50;
+  }
+  label {
+    @apply text-foreground/80;
+  }
+  h3 {
+    @apply flex mt-8 items-center text-3xl font-semibold text-foreground/60 space-x-2;
+  }
 }

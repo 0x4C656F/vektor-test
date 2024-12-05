@@ -11,7 +11,6 @@ function App() {
         <Route path="drafts/:id" element={<DraftsPage />} />
         <Route path="drafts" index element={<DraftsPage />} />
       </Route>
-      <Route path="logs" element={<LogsPage />} />
     </Routes>
   );
 }
