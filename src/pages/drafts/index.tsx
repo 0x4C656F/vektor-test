@@ -21,20 +21,6 @@ import {
 import { Delete, Done } from "@mui/icons-material";
 import { createLogFromDraft } from "../../store/logs";
 
-const isFormValid = (values: Draft): boolean => {
-  return requiredFields.every((field) => !!values[field as keyof Draft]);
-};
-const requiredFields = [
-  "providerId",
-  "serviceOrder",
-  "truckIdOrTrailer",
-  "odometer",
-  "engineHours",
-  "startDate",
-  "endDate",
-  "type",
-  "serviceDescription",
-];
 const DraftPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -319,6 +305,7 @@ function DraftNotFound() {
 }
 
 function RemoveDraftButton({ id }: { id: string }) {
+  // normally, i would request confirmation from user.
   const dispatch = useDispatch();
   function handleRemove() {
     dispatch(deleteDraft(id));
@@ -330,4 +317,23 @@ function RemoveDraftButton({ id }: { id: string }) {
     </IconButton>
   );
 }
+const isFormValid = (values: Draft): boolean => {
+  // I think this can be made via form actions,but i am not sure.
+  // cheeky way. Since form submit does not actually submit the form, so built-in
+  // validation does not trigger, i had to manually check whether all fields are good.
+
+  // You can't believe how much better forms in svelte are.
+  const requiredFields = [
+    "providerId",
+    "serviceOrder",
+    "truckIdOrTrailer",
+    "odometer",
+    "engineHours",
+    "startDate",
+    "endDate",
+    "type",
+    "serviceDescription",
+  ];
+  return requiredFields.every((field) => !!values[field as keyof Draft]);
+};
 export default DraftPage;
