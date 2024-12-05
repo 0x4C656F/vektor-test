@@ -2,7 +2,7 @@ import "./App.css";
 import { Route, Routes } from "react-router-dom";
 import DraftsPage from "./pages/drafts";
 import Layout from "./pages/layout";
-import LogsPage from "./pages/serviceLogs";
+import LogsPage from "./pages/service-logs";
 
 function App() {
   return (
