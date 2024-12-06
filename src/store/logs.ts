@@ -8,7 +8,7 @@ export enum LogType {
   EMERGENCY = "emergency",
 }
 
-type Log = {
+export type Log = {
   id: string;
   orderNumber: string;
   equipment: string;
@@ -180,6 +180,20 @@ const logsSlice = createSlice({
       saveLogsToLocalStorage(state.logs);
     },
 
+    updateLog(state, action: PayloadAction<Draft>) {
+      const { id, ...updates } = action.payload;
+
+      const logIndex = state.logs.findIndex((log) => log.id === id);
+
+      if (logIndex !== -1) {
+        state.logs[logIndex] = {
+          ...state.logs[logIndex],
+          ...updates,
+        };
+        saveLogsToLocalStorage(state.logs);
+      }
+    },
+
     deleteLog(state, action: PayloadAction<string>) {
       const logId = action.payload;
       state.logs = state.logs.filter((log) => log.id !== logId);
@@ -188,6 +202,6 @@ const logsSlice = createSlice({
   },
 });
 
-export const { createLogFromDraft, deleteLog } = logsSlice.actions;
+export const { createLogFromDraft, updateLog, deleteLog } = logsSlice.actions;
 export const selectLogs = (state: RootState) => state.logs.logs;
 export default logsSlice.reducer;

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteLog, selectLogs } from "../../store/logs";
+import { deleteLog, Log, selectLogs, updateLog } from "../../store/logs";
 import { useNavigate } from "react-router-dom";
 import { addDraft } from "../../store/drafts";
 
@@ -24,8 +24,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash, Edit3, Plus, SeparatorVertical } from "lucide-react";
-import { nanoid } from "@reduxjs/toolkit";
+import { Trash, Edit3, Plus, SeparatorVertical, X, Save } from "lucide-react";
+import { Dispatch, nanoid } from "@reduxjs/toolkit";
 
 const LogsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -133,52 +133,7 @@ const LogsPage: React.FC = () => {
         <TableBody>
           {filteredLogs.map((log) => {
             console.log(log);
-            return (
-              <TableRow key={log.id}>
-                <TableCell>{log.id}</TableCell>
-                <TableCell>{log.orderNumber}</TableCell>
-                <TableCell>{log.equipment}</TableCell>
-                <TableCell>{log.driver}</TableCell>
-                <TableCell>
-                  <p className="flex gap-2 items-center">
-                    <span
-                      className={`size-2 flex rounded-full ${
-                        log.type === "planned"
-                          ? "bg-green-500"
-                          : log.type === "unplanned"
-                            ? "bg-orange-500"
-                            : log.type === "emergency"
-                              ? "bg-red-500"
-                              : "bg-gray-500"
-                      }`}
-                    ></span>
-                    {log.type}
-                  </p>
-                </TableCell>
-                <TableCell>{log.provider}</TableCell>
-                <TableCell>{log.startDate}</TableCell>
-                <TableCell>{log.endDate}</TableCell>
-                <TableCell>{log.engineHours}</TableCell>
-                <TableCell>{log.odometer} mi</TableCell>
-                <TableCell>{log.totalAmount}</TableCell>
-                <TableCell className="space-x-2 ">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => dispatch(deleteLog(log.id))}
-                  >
-                    <Trash size={16} />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => alert("This feature is not yet implemented")}
-                  >
-                    <Edit3 size={16} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            );
+            return <LogTableRow dispatch={dispatch} log={log} />;
           })}
         </TableBody>
       </Table>
@@ -186,4 +141,157 @@ const LogsPage: React.FC = () => {
   );
 };
 
+function LogTableRow({ log, dispatch }: { log: Log; dispatch: Dispatch }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedLog, setEditedLog] = useState({ ...log });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditedLog((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = () => {
+    dispatch(updateLog(editedLog));
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditedLog({ ...log });
+    setIsEditing(false);
+  };
+
+  const renderCell = (
+    value: string | number,
+    name: string,
+    type: "text" | "number" = "text",
+  ) => {
+    if (isEditing) {
+      return (
+        <TableCell>
+          <Input
+            name={name}
+            value={editedLog[name as keyof Log] || value}
+            onChange={handleInputChange}
+            type={type}
+            className="w-full"
+          />
+        </TableCell>
+      );
+    }
+    return (
+      <TableCell>
+        {value}
+        {name === "odometer" ? " mi" : ""}
+      </TableCell>
+    );
+  };
+  const handleTypeChange = (value: string) => {
+    setEditedLog(
+      (prev) =>
+        ({
+          ...prev,
+          type: value,
+        }) as Log,
+    );
+  };
+  const renderType = () => {
+    if (isEditing) {
+      return (
+        <TableCell>
+          <Select value={editedLog.type} onValueChange={handleTypeChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="planned">
+                <div className="flex items-center gap-2">
+                  <span className="size-2 bg-green-500 rounded-full"></span>
+                  Planned
+                </div>
+              </SelectItem>
+              <SelectItem value="unplanned">
+                <div className="flex items-center gap-2">
+                  <span className="size-2 bg-orange-500 rounded-full"></span>
+                  Unplanned
+                </div>
+              </SelectItem>
+              <SelectItem value="emergency">
+                <div className="flex items-center gap-2">
+                  <span className="size-2 bg-red-500 rounded-full"></span>
+                  Emergency
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </TableCell>
+      );
+    }
+    return (
+      <TableCell>
+        <p className="flex gap-2 items-center">
+          <span
+            className={`size-2 flex rounded-full ${
+              log.type === "planned"
+                ? "bg-green-500"
+                : log.type === "unplanned"
+                  ? "bg-orange-500"
+                  : log.type === "emergency"
+                    ? "bg-red-500"
+                    : "bg-gray-500"
+            }`}
+          ></span>
+          {log.type}
+        </p>
+      </TableCell>
+    );
+  };
+
+  return (
+    <TableRow>
+      {renderCell(log.id, "id")}
+      {renderCell(log.orderNumber, "orderNumber")}
+      {renderCell(log.equipment, "equipment")}
+      {renderCell(log.driver, "driver")}
+      {renderType()}
+      {renderCell(log.provider, "provider")}
+      {renderCell(log.startDate, "startDate")}
+      {renderCell(log.endDate, "endDate")}
+      {renderCell(log.engineHours, "engineHours", "number")}
+      {renderCell(log.odometer, "odometer", "number")}
+      {renderCell(log.totalAmount, "totalAmount", "number")}
+      <TableCell>
+        {isEditing ? (
+          <div className="flex gap-2">
+            <Button variant="secondary" size="icon" onClick={handleSave}>
+              <Save size={16} />
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleCancel}>
+              <X size={16} />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={() => dispatch(deleteLog(log.id))}
+            >
+              <Trash size={16} />
+            </Button>
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={() => setIsEditing(true)}
+            >
+              <Edit3 size={16} />
+            </Button>
+          </div>
+        )}
+      </TableCell>
+    </TableRow>
+  );
+}
 export default LogsPage;
